@@ -5,8 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pandas>=2.2.3",
-    "requests>=2.32.3",
+    "anthropic>=0.49.0",
+    "ipykernel>=6.29.5",
 ]
 
 [tool.pylint]
@@ -14,6 +14,5 @@ max-line-length = 100
 disable = [
     "C0111",  # missing-docstring
     "C0103",  # invalid-name
-    "C0330",  # wrong-hanging-indentation
 ]
 good-names = ["i", "j", "k", "ex", "Run", "_"]
