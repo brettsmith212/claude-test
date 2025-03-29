@@ -36,6 +36,7 @@ def answer_question(question):
     system_prompt = """
     You will be asked a question by the user.
     If answering the question requires data you were not trained on, you can use the get_article tool to get the contents of a recent wikipedia article about the topic.
+    You can make multiple tool calls in the same request and the tool will return all requested information.
     If you can answer the question without needing to get more information, please do so.
     Only call the tool when needed.
     """
@@ -53,45 +54,50 @@ def answer_question(question):
         tools=[article_search_tool],
     )
 
-    if response.stop_reason == "tool_use":
-        tool_use = response.content[-1]
-        tool_name = tool_use.name
-        tool_input = tool_use.input
+    while response.stop_reason == "tool_use":
         # Add Claude's tool use call to messages:
         messages.append({"role": "assistant", "content": response.content})
+        for tool_use in response.content:
+            if tool_use.type == "tool_use":
+                tool_name = tool_use.name
+                tool_input = tool_use.input
 
-        if tool_name == "get_article":
-            search_term = tool_input["search_term"]
-            print(f"Claude wants to get an article for {search_term}")
-            wiki_result = get_article(search_term)  # get wikipedia article content
-            # construct our tool_result message
-            tool_response = {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "tool_result",
-                        "tool_use_id": tool_use.id,
-                        "content": wiki_result,
+                if tool_name == "get_article":
+                    search_term = tool_input["search_term"]
+                    print(f"Claude wants to get an article for {search_term}")
+                    wiki_result = get_article(
+                        search_term
+                    )  # get wikipedia article content
+                    # construct our tool_result message
+                    tool_response = {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": tool_use.id,
+                                "content": wiki_result,
+                            }
+                        ],
                     }
-                ],
-            }
-            messages.append(tool_response)
-            # respond back to Claude
-            response = client.messages.create(
-                model="claude-3-sonnet-20240229",
-                system=system_prompt,
-                messages=messages,
-                max_tokens=1000,
-                tools=[article_search_tool],
-            )
-            print("Claude's final answer:")
-            print(response.content[0].text)
-
-    else:
-        print("Claude did not call our tool")
-        print(response.content[0].text)
+                    messages.append(tool_response)
+                # respond back to Claude
+        response = client.messages.create(
+            model="claude-3-sonnet-20240229",
+            system=system_prompt,
+            messages=messages,
+            max_tokens=1000,
+            tools=[article_search_tool],
+        )
+    print("Claude's final answer:")
+    print(response.content[0].text)
 
 
-answer_question("Who wrote the score for the movie Challengers?")
-
-answer_question("How many legs does an octopus have?")
+# answer_question(
+#     """
+#     How many Oscars does Christopher Nolan have?
+#     Does he have more than the number of Emmy's that Ben Stiller has?
+#     """
+# )
+while True:
+    user_input = input("ask a question: ")
+    answer_question(user_input)
