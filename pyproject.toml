@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.49.0",
+    "dotenv>=0.9.9",
     "ipykernel>=6.29.5",
+    "wikipedia>=1.4.0",
 ]
 
 [tool.pylint]
