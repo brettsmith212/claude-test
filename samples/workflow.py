@@ -2,8 +2,6 @@ import wikipedia
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-MODEL_NAME = "claude-3-5-sonnet-20240620"
-
 
 def get_article(search_term):
     results = wikipedia.search(search_term)
@@ -98,6 +96,7 @@ def answer_question(question):
 #     Does he have more than the number of Emmy's that Ben Stiller has?
 #     """
 # )
+
 while True:
     user_input = input("ask a question: ")
     answer_question(user_input)
